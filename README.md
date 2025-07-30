@@ -1,16 +1,24 @@
-# Nation Reclaim: Nigeria
 
-A strategic simulation game inspired by *Rebel Inc.*, focused on Nigeria's governance, politics, insurgency, and economic stability.
+# Nation Reclaim: Nigeria — Ultrareal Build
 
-## Features
-- Ministries: Anti-Corruption, Agriculture, Security
-- Dynamic Events: Elections, Insurgencies (Boko Haram, IPOB), Subsidy Reforms
-- Dashboard metrics: Budget, Stability, Corruption, Popularity
-- Save/Load game functionality
-- Background music and immersive UI
+This is the most strategically detailed version. Every decision reflects deep sectoral trade-offs, insurgency dynamics, and governance balance.
+
+## Realism Features
+- 🔥 Simulates Boko Haram, IPOB, oil theft, subsidy removal, FX crisis, election manipulation
+- 📡 Prepares backend API hook-ins for live data (NBS, INEC, NCDC, DSS)
+- 🧠 Player must balance political capital, economic health, insurgency, and media perception
+- 📉 Randomized consequences, AI modeling Nigeria’s internal power struggles
 
 ## How to Play
-Open `index.html` in your browser, or deploy via GitHub Pages for live web play.
+1. Replace `YOUR_API_KEY` with a real Google Maps JavaScript API key.
+2. Open `index.html` in your browser.
+3. Watch dynamic map + dashboard simulate decisions with cascading consequences.
 
-## License
-Free to modify for educational or non-commercial use. Attribution appreciated.
+## To Deploy
+- Upload to GitHub or Netlify for public play.
+- Connect to backend Firebase or JSON API for full realism.
+
+## Next Additions (Pending)
+- GeoJSON overlays by LGA and state
+- Audio alerts, voiceover crisis briefings
+- Real-time economic data from open Nigerian datasets

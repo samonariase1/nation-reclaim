@@ -1,314 +1,72 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nation Reclaim: Nigeria</title>
+  <title>Nation Reclaim: Nigeria (Ultrareal)</title>
+  <link rel="icon" href="assets/favicon.ico" />
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #101010;
-      color: #f4f4f4;
-    }
-    #game {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-    }
-    h1 {
-      font-size: 28px;
-      text-align: center;
-      margin: 15px 0;
-    }
-    @media (max-width: 600px) { #map { grid-template-columns: repeat(2, 80px); gap: 6px; } } #map {
-      display: grid;
-      grid-template-columns: repeat(4, 80px);
-      gap: 8px;
-      margin: 20px 0;
-    }
-    .region {
-      width: 80px;
-      height: 80px;
-      background: #444;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      border: 1px solid #777;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: center;
-      white-space: pre-wrap;
-      transition: all 0.3s;
-    }
-    .region.stable { background: #27ae60; }
-    .region.unstable { background: #f39c12; }
-    .region.rebel { background: #c0392b; }
-
-    #dashboard {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }
-    .panel {
-      background: #1e1e1e;
-      padding: 10px;
-      border-radius: 8px;
-      min-width: 140px;
-      box-shadow: 0 0 8px #111;
-    }
-    .panel span { font-weight: bold; color: #2ecc71; }
-    button {
-      background: #2980b9;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px 5px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #1f5c8b;
-    }
-    #eventBox {
-      background: #222;
-      border: 2px solid #888;
-      padding: 15px;
-      margin: 20px auto;
-      display: none;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 450px;
-    }
-    #eventBox button { margin: 10px 5px; }
-    audio { display: none; }
+    body { font-family: Arial; background: #111; color: #eee; margin: 0; padding: 0; }
+    #header { padding: 16px; background: #222; text-align: center; font-size: 1.6em; }
+    #dashboard, #map, #console, #choices { margin: 10px auto; width: 90%; max-width: 960px; }
+    #map { height: 400px; background: #000; }
+    select, button { padding: 8px; margin: 5px; }
+    .sector { margin: 10px 0; background: #1a1a1a; padding: 10px; border: 1px solid #333; }
   </style>
 </head>
 <body>
-  <div id="game">
-    <h1>Nation Reclaim: Nigeria</h1>
-    <div id="dashboard">
-      <div class="panel">Budget: ₦<span id="budget">500</span>B</div>
-      <div class="panel">Stability: <span id="stability">45</span>%</div>
-      <div class="panel">Corruption: <span id="corruption">35</span>%</div>
-      <div class="panel">Public Trust: <span id="popularity">40</span>%</div>
-      <div class="panel">Unemployment: <span id="unemployment">25</span>%</div>
-      <div class="panel">Inflation: <span id="inflation">21</span>%</div>
-    </div>
+  <div id="header">Nation Reclaim: Nigeria 🇳🇬 — The Balance of Power</div>
 
-    <div id="map"></div>
-
-    <div>
-      <button onclick="nextTurn()">Next Quarter</button>
-      <button onclick="launchPolicy()">Launch Policy</button>
-      <button onclick="saveGame()">Save</button>
-      <button onclick="loadGame()">Load</button>
-    </div>
-
-    <div id="eventBox">
-      <p id="eventText"></p>
-      <button onclick="resolveEvent(true)">Yes</button>
-      <button onclick="resolveEvent(false)">No</button>
-    </div>
+  <div id="dashboard">
+    <p>Difficulty:
+      <select id="difficulty">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </p>
+    <p>Status: <span id="status">Initializing Nigeria’s sectors...</span></p>
   </div>
 
-  <audio id="bgMusic" loop autoplay>
-    <source src="assets/bg.mp3" type="audio/mpeg">
-  </audio>
+  <div id="map"></div>
 
+  <div id="choices">
+    <div class="sector"><strong>🛡️ Security:</strong> Boko Haram resurgence in Borno. Deploy counter-insurgency?</div>
+    <div class="sector"><strong⚖️ Governance:</strong> Minister of Petroleum under investigation. Cover up or Expose?</div>
+    <div class="sector"><strong>💵 Economy:</strong> Naira devaluation risk. Float or fix?</div>
+    <div class="sector"><strong>🗳️ Politics:</strong> Upcoming elections. Fund campaign or focus on reforms?</div>
+    <button onclick="simulate()">Respond Strategically</button>
+  </div>
+
+  <div id="console" class="sector">
+    <strong>🧠 Strategic Log:</strong>
+    <div id="log">Awaiting player decision...</div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
   <script>
-    const dashboard = {
-      budget: 500,
-      stability: 45,
-      corruption: 35,
-      popularity: 40,
-      unemployment: 25,
-      inflation: 21
-    };
-
-    const map = document.getElementById("map");
-    const eventBox = document.getElementById("eventBox");
-    const eventText = document.getElementById("eventText");
-    let currentEvent = null;
-
-    const updateDashboard = () => {
-      for (const key in dashboard) {
-        document.getElementById(key).textContent = Math.floor(dashboard[key]);
-      }
-    };
-
-    const regions = [
-      "Lagos", "Abuja", "Kano", "Rivers",
-      "Kaduna", "Borno", "Enugu", "Edo",
-      "Oyo", "Anambra", "Sokoto", "Bayelsa"
-    ].map((name, i) => ({
-      id: i,
-      name,
-      status: "unstable",
-      threat: Math.random() * 50,
-      rebels: 0
-    }));
-
-    const renderMap = () => {
-      map.innerHTML = "";
-      regions.forEach((region, i) => {
-        const div = document.createElement("div");
-        div.className = `region ${region.status}`;
-        div.innerText = `${region.name}\n${Math.floor(region.threat)}%`;
-        div.onclick = () => intervene(i);
-        map.appendChild(div);
+    function initMap() {
+      const nigeria = { lat: 9.0820, lng: 8.6753 };
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 6,
+        center: nigeria,
+        styles: [{ elementType: 'geometry', stylers: [{color: '#212121'}] }]
       });
-    };
-
-    function intervene(index) {
-      const r = regions[index];
-      if (dashboard.budget < 50) return alert("Insufficient funds");
-      if (r.status === "rebel") return alert("Too late, rebels control this area.");
-      r.threat -= 30;
-      r.rebels = Math.max(0, r.rebels - 1);
-      dashboard.budget -= 50;
-      dashboard.corruption += 3;
-      dashboard.stability += 2;
-      dashboard.popularity += 2;
-      updateStatus(r);
-      updateDashboard();
-      renderMap();
     }
 
-    function updateStatus(region) {
-      if (region.threat > 70) region.status = "rebel";
-      else if (region.threat > 35) region.status = "unstable";
-      else region.status = "stable";
+    function simulate() {
+      const scenarios = [
+        "You deployed troops to Borno. Boko Haram retaliated in Yobe.",
+        "You exposed the minister. International donors praise your leadership.",
+        "You floated the Naira. Inflation rises, but foreign reserves increase.",
+        "You focused on reforms. Election polls dip, but youth movements back you."
+      ];
+      const log = document.getElementById("log");
+      log.innerText = scenarios[Math.floor(Math.random() * scenarios.length)];
     }
 
-    function nextTurn() {
-      dashboard.budget += 100;
-      dashboard.corruption += Math.random() * 4;
-      dashboard.popularity -= Math.random() * 3;
-      dashboard.stability -= Math.random() * 3;
-      dashboard.unemployment += Math.random() * 2;
-      dashboard.inflation += Math.random() * 2;
-      regions.forEach(r => {
-        r.threat += Math.random() * 12;
-        if (r.status === "rebel") r.rebels++;
-        updateStatus(r);
-      });
-      randomEvent();
-      updateDashboard();
-      renderMap();
-    }
-
-    const policies = [
-      {
-        text: "Launch Anti-Corruption Agency? (-₦70B)",
-        yes: () => {
-          dashboard.budget -= 70;
-          dashboard.corruption -= 10;
-          dashboard.popularity += 5;
-        },
-        no: () => {
-          dashboard.corruption += 5;
-        }
-      },
-      {
-        text: "Subsidize Agriculture Sector? (-₦50B)",
-        yes: () => {
-          dashboard.budget -= 50;
-          dashboard.unemployment -= 5;
-          dashboard.stability += 3;
-        },
-        no: () => {
-          dashboard.popularity -= 4;
-        }
-      },
-      {
-        text: "Implement Fuel Subsidy Removal?",
-        yes: () => {
-          dashboard.budget += 100;
-          dashboard.popularity -= 6;
-          dashboard.inflation += 5;
-        },
-        no: () => {
-          dashboard.budget -= 50;
-        }
-      },
-      {
-        text: "Conduct National Elections? (Risk: instability)",
-        yes: () => {
-          dashboard.stability -= 5;
-          dashboard.popularity += 10;
-          dashboard.budget -= 80;
-        },
-        no: () => {
-          dashboard.popularity -= 10;
-        }
-      },
-      {
-        text: "Crackdown on Boko Haram in Borno?",
-        yes: () => {
-          regions.find(r => r.name === "Borno").threat -= 25;
-          dashboard.budget -= 100;
-        },
-        no: () => {
-          regions.find(r => r.name === "Borno").threat += 15;
-        }
-      },
-      {
-        text: "Dialogue with IPOB in Enugu?",
-        yes: () => {
-          regions.find(r => r.name === "Enugu").threat -= 20;
-          dashboard.stability += 4;
-        },
-        no: () => {
-          regions.find(r => r.name === "Enugu").threat += 15;
-        }
-      }
-    ];
-
-    function randomEvent() {
-      if (Math.random() < 0.5) {
-        currentEvent = policies[Math.floor(Math.random() * policies.length)];
-        eventText.textContent = currentEvent.text;
-        eventBox.style.display = "block";
-      }
-    }
-
-    function resolveEvent(choice) {
-      if (choice) currentEvent.yes();
-      else currentEvent.no();
-      currentEvent = null;
-      eventBox.style.display = "none";
-      updateDashboard();
-    }
-
-    function launchPolicy() {
-      randomEvent();
-    }
-
-    function saveGame() {
-      localStorage.setItem("nigeriaGameSave", JSON.stringify({ dashboard, regions }));
-      alert("Progress saved.");
-    }
-
-    function loadGame() {
-      const data = JSON.parse(localStorage.getItem("nigeriaGameSave"));
-      if (!data) return alert("No save found.");
-      Object.assign(dashboard, data.dashboard);
-      data.regions.forEach((r, i) => Object.assign(regions[i], r));
-      updateDashboard();
-      renderMap();
-      alert("Save loaded.");
-    }
-
-    renderMap();
-    updateDashboard();
+    window.onload = initMap;
   </script>
 </body>
 </html>
